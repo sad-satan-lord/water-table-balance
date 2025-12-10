@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Water Balance Practice v2.0 (10 Sets)</title>
+    <title>Water Balance Practice - Made by Moin Raza</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #e9ecef; color: #333; }
-        h1 { color: #2c3e50; }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #666; font-style: italic; margin-bottom: 30px; }
         .controls { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
         .control-group { display: flex; flex-direction: column; }
         label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -30,7 +31,7 @@
         .wrong { background-color: #f8d7da !important; color: #721c24; }
         
         /* Buttons */
-        .btn-container { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-container { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
         .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: transform 0.1s, opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .btn:active { transform: translateY(1px); }
         .btn-check { background-color: #28a745; }
@@ -44,7 +45,7 @@
 <body>
 
     <h1>Water Balance Practice Tool v2.0</h1>
-    <p>Select a scenario below. Values for Temp, P, and PE will auto-load.</p>
+    <div class="subtitle">Made by Moin Raza</div>
     
     <div class="controls">
         <div class="control-group">
@@ -356,5 +357,4 @@
         window.onload = init;
     </script>
 </body>
-  </html>
-  
+</html>
