@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Balance Practice v2.0 (10 Sets)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background: #e9ecef; color: #333; }
+        h1 { color: #2c3e50; }
+        .controls { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+        .control-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85em; font-weight: bold; margin-bottom: 5px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        select, input[type="number"] { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 1em; }
+        select { min-width: 250px; background-color: #f8f9fa; cursor: pointer; }
+        
+        /* Table Styling */
+        .table-container { overflow-x: auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 10px; }
+        table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 800px; }
+        th, td { border: 1px solid #dee2e6; padding: 12px 8px; text-align: center; }
+        th { background: #343a40; color: white; font-weight: 600; }
+        td:first-child { background: #f1f3f5; font-weight: bold; position: sticky; left: 0; border-right: 2px solid #dee2e6; }
+        
+        /* Inputs */
+        input.cell-input { width: 100%; border: none; text-align: center; font-size: 1em; padding: 5px 0; background: transparent; }
+        input.cell-input:focus { background: #e8f0fe; outline: none; border-radius: 4px; }
+        .readonly { background-color: #e9ecef; color: #6c757d; pointer-events: none; font-weight: bold; }
+        
+        /* Feedback Colors */
+        .correct { background-color: #d4edda !important; color: #155724; }
+        .wrong { background-color: #f8d7da !important; color: #721c24; }
+        
+        /* Buttons */
+        .btn-container { margin-top: 20px; display: flex; gap: 10px; }
+        .btn { padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: transform 0.1s, opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn:active { transform: translateY(1px); }
+        .btn-check { background-color: #28a745; }
+        .btn-solve { background-color: #ffc107; color: #333; }
+        .btn-reset { background-color: #6c757d; }
+        
+        .toggle-container { margin-left: auto; display: flex; align-items: center; gap: 10px; background: #e2e6ea; padding: 8px 12px; border-radius: 6px; }
+        .scenario-desc { margin-top: 10px; font-style: italic; color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <h1>Water Balance Practice Tool v2.0</h1>
+    <p>Select a scenario below. Values for Temp, P, and PE will auto-load.</p>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label>Select Practice Problem</label>
+            <select id="datasetSelect" onchange="loadDataset()">
+                </select>
+        </div>
+        <div class="control-group">
+            <label>WHC (Bucket Size)</label>
+            <input type="number" id="whc" value="150">
+        </div>
+        <div class="control-group">
+            <label>Start Storage (Dec)</label>
+            <input type="number" id="startSt" value="150">
+        </div>
+        
+        <div class="toggle-container">
+            <input type="checkbox" id="professorMode" checked>
+            <label for="professorMode" title="Checked = Water fills bucket even if frozen (Your Professor's Rule). Unchecked = Frozen ground blocks water.">Professor Mode (Ignore Frozen Rule)</label>
+        </div>
+    </div>
+    
+    <div id="scenarioDescription" class="scenario-desc"></div>
+
+    <div class="table-container">
+        <table id="wbTable">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>J</th><th>F</th><th>M</th><th>A</th><th>M</th><th>J</th>
+                    <th>J</th><th>A</th><th>S</th><th>O</th><th>N</th><th>D</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <div class="btn-container">
+        <button class="btn btn-check" onclick="checkAnswers()">Check My Work</button>
+        <button class="btn btn-solve" onclick="autoSolve()">Show Solution</button>
+        <button class="btn btn-reset" onclick="resetTable()">Clear My Answers</button>
+    </div>
+
+    <script>
+        // --- THE 10 NEW DATASETS ---
+        const datasets = {
+            1: {
+                name: "1. The 'Classic' Textbook Case",
+                desc: "Standard balanced climate. Good for warming up. Watch the summer drawdown.",
+                whc: 150, start: 150,
+                Temp: [2, 4, 8, 12, 18, 22, 25, 24, 19, 13, 7, 3],
+                P: [80, 75, 70, 60, 50, 40, 30, 35, 60, 85, 90, 95],
+                PE: [5, 10, 25, 45, 80, 110, 130, 115, 70, 40, 15, 5]
+            },
+            2: {
+                name: "2. The Deep Freeze (Frozen Ground)",
+                desc: "Severe winter. Watch the 'Professor Mode' toggle! Negative temps in J/F/D.",
+                whc: 100, start: 100,
+                Temp: [-10, -5, 2, 8, 15, 20, 22, 20, 12, 5, -2, -8],
+                P: [40, 40, 50, 60, 70, 80, 80, 70, 60, 50, 40, 40],
+                PE: [0, 0, 10, 35, 65, 95, 110, 95, 55, 25, 0, 0]
+            },
+            3: {
+                name: "3. Mediterranean (Wet Winter/Dry Summer)",
+                desc: "Classic California/Italy climate. Massive surplus in winter, empty bucket in summer.",
+                whc: 120, start: 100,
+                Temp: [8, 10, 12, 15, 18, 22, 26, 26, 23, 18, 12, 9],
+                P: [120, 110, 90, 60, 30, 10, 0, 5, 20, 60, 100, 130],
+                PE: [15, 20, 35, 60, 90, 120, 150, 140, 100, 60, 30, 15]
+            },
+            4: {
+                name: "4. Tropical Monsoons (Huge Surplus)",
+                desc: "It rains A LOT. The bucket will stay full for months. Focus on calculating Surplus correctly.",
+                whc: 200, start: 200,
+                Temp: [25, 26, 27, 28, 29, 28, 27, 27, 27, 27, 26, 25],
+                P: [150, 120, 100, 100, 200, 400, 500, 450, 300, 200, 150, 180],
+                PE: [110, 120, 130, 140, 140, 130, 120, 120, 120, 120, 110, 100]
+            },
+            5: {
+                name: "5. The Desert (Permanent Deficit)",
+                desc: "It almost never rains enough. The bucket might never fill up. Start is 0.",
+                whc: 100, start: 0,
+                Temp: [12, 15, 18, 22, 28, 33, 36, 35, 30, 24, 18, 13],
+                P: [10, 10, 10, 5, 5, 0, 0, 10, 5, 10, 15, 10],
+                PE: [25, 35, 60, 90, 140, 180, 200, 180, 140, 90, 40, 25]
+            },
+            6: {
+                name: "6. The 'Exact Zero' Trap",
+                desc: "Designed so the storage hits EXACTLY 0 in one month. Don't go negative!",
+                whc: 150, start: 50,
+                Temp: [5, 7, 10, 15, 20, 25, 28, 27, 22, 16, 10, 6],
+                P: [50, 50, 50, 40, 40, 20, 20, 40, 60, 70, 80, 60],
+                PE: [10, 15, 30, 60, 90, 120, 140, 120, 80, 40, 20, 10]
+            },
+            7: {
+                name: "7. The 'Late Recharge'",
+                desc: "The bucket stays empty for a long time and only refills in December.",
+                whc: 100, start: 0,
+                Temp: [2, 5, 10, 16, 22, 26, 29, 28, 20, 12, 6, 1],
+                P: [40, 40, 45, 50, 50, 40, 30, 40, 50, 60, 90, 100],
+                PE: [5, 15, 35, 70, 110, 150, 170, 150, 90, 40, 15, 5]
+            },
+            8: {
+                name: "8. Southern Hemisphere (Seasons Flipped)",
+                desc: "Jan is Summer (Hot), July is Winter (Cold). Watch your PE values!",
+                whc: 150, start: 100,
+                Temp: [25, 24, 21, 17, 12, 9, 8, 10, 13, 16, 20, 23],
+                P: [20, 30, 50, 80, 100, 120, 110, 90, 70, 50, 30, 20],
+                PE: [130, 110, 80, 50, 25, 15, 10, 20, 40, 65, 95, 120]
+            },
+            9: {
+                name: "9. High Altitude (Sub-Zero PE > 0)",
+                desc: "Temps are negative, but PE is small (like your classwork). Professor Mode recommended.",
+                whc: 120, start: 120,
+                Temp: [-8, -9, -4, 2, 8, 12, 15, 14, 9, 2, -3, -7],
+                P: [30, 30, 40, 50, 70, 90, 100, 90, 70, 50, 40, 30],
+                PE: [5, 5, 10, 30, 60, 80, 95, 85, 50, 25, 10, 5]
+            },
+            10: {
+                name: "10. The 'Rollercoaster' (Fluctuating)",
+                desc: "Erratic rain patterns. Just follow the math month by month. Don't guess.",
+                whc: 110, start: 55,
+                Temp: [10, 12, 15, 18, 22, 25, 28, 27, 24, 19, 14, 11],
+                P: [100, 20, 100, 20, 100, 20, 100, 20, 100, 20, 100, 20],
+                PE: [20, 25, 40, 60, 90, 120, 140, 120, 80, 50, 30, 20]
+            }
+        };
+
+        const rowLabels = ['Temp', 'P', 'PE', 'P-PE', 'ST', 'ΔST', 'AE', 'D', 'S'];
+
+        function init() {
+            const select = document.getElementById('datasetSelect');
+            for (let key in datasets) {
+                let opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = datasets[key].name;
+                select.appendChild(opt);
+            }
+            loadDataset();
+        }
+
+        function loadDataset() {
+            const key = document.getElementById('datasetSelect').value;
+            const data = datasets[key];
+            
+            // Set Inputs
+            document.getElementById('whc').value = data.whc;
+            document.getElementById('startSt').value = data.start;
+            document.getElementById('scenarioDescription').textContent = data.desc;
+            
+            // Rebuild Table
+            const tbody = document.querySelector('#wbTable tbody');
+            tbody.innerHTML = '';
+            
+            rowLabels.forEach(label => {
+                const tr = document.createElement('tr');
+                const tdLabel = document.createElement('td');
+                tdLabel.textContent = label;
+                tr.appendChild(tdLabel);
+
+                for (let i = 0; i < 12; i++) {
+                    const td = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.className = 'cell-input';
+                    input.dataset.row = label;
+                    input.dataset.col = i;
+                    input.type = "number";
+
+                    if (['Temp', 'P', 'PE'].includes(label)) {
+                        input.value = data[label][i];
+                    } else if (label === 'P-PE') {
+                        input.classList.add('readonly');
+                        input.value = (data.P[i] - data.PE[i]).toFixed(0);
+                    }
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                }
+                tbody.appendChild(tr);
+            });
+            
+            // Add listeners for dynamic P-PE updates
+            document.querySelectorAll('input[data-row="P"], input[data-row="PE"]').forEach(input => {
+                input.addEventListener('input', updateDiffRow);
+            });
+        }
+
+        function updateDiffRow() {
+            for (let i = 0; i < 12; i++) {
+                const p = parseFloat(document.querySelector(`input[data-row="P"][data-col="${i}"]`).value) || 0;
+                const pe = parseFloat(document.querySelector(`input[data-row="PE"][data-col="${i}"]`).value) || 0;
+                const diffInput = document.querySelector(`input[data-row="P-PE"][data-col="${i}"]`);
+                diffInput.value = (p - pe).toFixed(0);
+            }
+        }
+
+        function solveLogic() {
+            const whc = parseFloat(document.getElementById('whc').value);
+            let currentSt = parseFloat(document.getElementById('startSt').value);
+            const profMode = document.getElementById('professorMode').checked;
+
+            let results = { ST: [], DeltaST: [], AE: [], D: [], S: [] };
+
+            for (let i = 0; i < 12; i++) {
+                const temp = parseFloat(document.querySelector(`input[data-row="Temp"][data-col="${i}"]`).value) || 0;
+                const p = parseFloat(document.querySelector(`input[data-row="P"][data-col="${i}"]`).value) || 0;
+                const pe = parseFloat(document.querySelector(`input[data-row="PE"][data-col="${i}"]`).value) || 0;
+                const diff = p - pe;
+
+                let newSt = currentSt;
+                let delta = 0, ae = 0, d = 0, s = 0;
+                const isFrozen = temp < 0;
+
+                // LOGIC CORE
+                if (isFrozen && !profMode) {
+                    // FROZEN (Standard)
+                    newSt = currentSt; 
+                    ae = 0; 
+                    s = p; // Snow runs off
+                    d = 0;
+                } else {
+                    // THAWED or PROFESSOR MODE
+                    if (diff >= 0) {
+                        // Recharge / Surplus
+                        let potentialSt = currentSt + diff;
+                        if (potentialSt > whc) {
+                            newSt = whc;
+                            s = potentialSt - whc;
+                        } else {
+                            newSt = potentialSt;
+                            s = 0;
+                        }
+                        ae = pe;
+                        d = 0;
+                    } else {
+                        // Withdrawal / Deficit
+                        let withdrawalNeeded = Math.abs(diff);
+                        if (currentSt >= withdrawalNeeded) {
+                            newSt = currentSt - withdrawalNeeded;
+                            ae = pe;
+                            d = 0;
+                        } else {
+                            newSt = 0;
+                            ae = p + currentSt; // All rain + all storage
+                            d = pe - ae;
+                        }
+                        s = 0;
+                    }
+                }
+
+                delta = newSt - currentSt;
+                
+                // Store rounded results
+                results.ST.push(Math.round(newSt));
+                results.DeltaST.push(Math.round(delta));
+                results.AE.push(Math.round(ae));
+                results.D.push(Math.round(d));
+                results.S.push(Math.round(s));
+                currentSt = newSt;
+            }
+            return results;
+        }
+
+        function checkAnswers() {
+            const solution = solveLogic();
+            const rowsToCheck = ['ST', 'ΔST', 'AE', 'D', 'S'];
+
+            rowsToCheck.forEach(rowKey => {
+                let domKey = rowKey === 'ΔST' ? 'ΔST' : rowKey;
+                for (let i = 0; i < 12; i++) {
+                    const input = document.querySelector(`input[data-row="${domKey}"][data-col="${i}"]`);
+                    const userVal = parseFloat(input.value);
+                    const correctVal = rowKey === 'ΔST' ? solution.DeltaST[i] : solution[rowKey][i];
+
+                    if (isNaN(userVal)) {
+                        input.className = 'cell-input';
+                    } else if (Math.abs(userVal - correctVal) < 1) { // Tolerate small rounding
+                        input.className = 'cell-input correct';
+                    } else {
+                        input.className = 'cell-input wrong';
+                    }
+                }
+            });
+        }
+
+        function autoSolve() {
+            const solution = solveLogic();
+            const rowsToFill = ['ST', 'ΔST', 'AE', 'D', 'S'];
+            rowsToFill.forEach(rowKey => {
+                let domKey = rowKey === 'ΔST' ? 'ΔST' : rowKey;
+                for (let i = 0; i < 12; i++) {
+                    const input = document.querySelector(`input[data-row="${domKey}"][data-col="${i}"]`);
+                    input.value = rowKey === 'ΔST' ? solution.DeltaST[i] : solution[rowKey][i];
+                    input.className = 'cell-input';
+                }
+            });
+        }
+
+        function resetTable() {
+             const rowsToClear = ['ST', 'ΔST', 'AE', 'D', 'S'];
+             rowsToClear.forEach(row => {
+                 document.querySelectorAll(`input[data-row="${row}"]`).forEach(input => {
+                     input.value = '';
+                     input.className = 'cell-input';
+                 });
+             });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+  </html>
+  
