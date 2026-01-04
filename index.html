@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Water Balance Pro - Made by Moin Raza</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Bangers&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
@@ -20,9 +20,9 @@
             margin: 0;
             padding: 40px 20px;
             color: var(--text-main);
-            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%); /* Default Freeze */
+            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);
             min-height: 100vh;
-            transition: background 1.5s ease; /* Smooth background transition */
+            transition: background 1.5s ease;
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
         }
@@ -131,7 +131,6 @@
         
         td { border-bottom: 1px solid #e2e8f0; padding: 0; }
         
-        /* Sticky First Column */
         td:first-child { 
             position: sticky; 
             left: 0; 
@@ -144,7 +143,6 @@
             z-index: 10;
         }
 
-        /* Inputs in Table */
         input.cell-input {
             width: 100%;
             border: none;
@@ -157,7 +155,6 @@
         input.cell-input:focus { background: #eff6ff; }
         .readonly { background: #f8fafc; color: #94a3b8; font-weight: 500; pointer-events: none; }
 
-        /* Feedback Colors */
         .correct { background: #dcfce7 !important; color: #166534; font-weight: 600; }
         .wrong { background: #fee2e2 !important; color: #991b1b; animation: shake 0.3s; }
         
@@ -168,7 +165,6 @@
             100% { transform: translateX(0); }
         }
 
-        /* Buttons */
         .action-bar { display: flex; gap: 15px; margin-top: 30px; justify-content: flex-end; }
         
         .btn {
@@ -190,11 +186,8 @@
         .btn-solve { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
         .btn-reset { background: white; color: var(--text-sub); border: 1px solid #cbd5e1; }
 
-        /* Toggle Switch */
         .toggle-switch { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
-        .switch {
-            position: relative; display: inline-block; width: 44px; height: 24px;
-        }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
             position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
@@ -206,6 +199,74 @@
         }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(20px); }
+
+        /* --- COMIC CALCULATOR CSS --- */
+        #calc-toggle {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 60px; height: 60px;
+            background: white; border: 3px solid black;
+            border-radius: 50%;
+            box-shadow: 6px 6px 0px black;
+            font-family: 'Bangers', cursive;
+            font-size: 1.2rem; cursor: pointer; z-index: 1000;
+            transition: transform 0.1s;
+        }
+        #calc-toggle:active { transform: translate(3px, 3px); box-shadow: 3px 3px 0px black; }
+
+        .comic-calculator {
+            position: fixed; bottom: 100px; right: 30px;
+            width: 260px;
+            background: white;
+            border: 4px solid black;
+            box-shadow: 10px 10px 0px black;
+            padding: 15px;
+            border-radius: 10px;
+            display: none; /* Hidden by default */
+            z-index: 999;
+            font-family: 'Bangers', cursive;
+        }
+        
+        .calc-header {
+            background: black; color: white;
+            padding: 5px 10px; margin: -15px -15px 10px -15px;
+            cursor: grab;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .calc-display {
+            width: 100%;
+            height: 50px;
+            border: 3px solid black;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-align: right;
+            padding: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        .calc-keys {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .calc-btn {
+            background: white;
+            border: 2px solid black;
+            box-shadow: 3px 3px 0px black;
+            padding: 10px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .calc-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px black;
+        }
+        .calc-btn.operator { background: #ddd; }
+        .calc-btn.clear { background: #ffcccc; }
+        .calc-btn.equal { background: #ccffcc; grid-column: span 2; }
 
     </style>
 </head>
@@ -274,101 +335,100 @@
         </div>
     </div>
 
+    <button id="calc-toggle" onclick="toggleCalc()">CALC</button>
+
+    <div id="comicCalc" class="comic-calculator">
+        <div class="calc-header" id="calcDrag">
+            <span>CALCULATOR</span>
+            <span style="cursor:pointer;" onclick="toggleCalc()">X</span>
+        </div>
+        <input type="text" class="calc-display" id="calcDisplay" readonly>
+        <div class="calc-keys">
+            <button class="calc-btn clear" onclick="clearCalc()">C</button>
+            <button class="calc-btn operator" onclick="appendCalc('/')">/</button>
+            <button class="calc-btn operator" onclick="appendCalc('*')">×</button>
+            <button class="calc-btn operator" onclick="backspace()">⌫</button>
+            
+            <button class="calc-btn" onclick="appendCalc('7')">7</button>
+            <button class="calc-btn" onclick="appendCalc('8')">8</button>
+            <button class="calc-btn" onclick="appendCalc('9')">9</button>
+            <button class="calc-btn operator" onclick="appendCalc('-')">-</button>
+            
+            <button class="calc-btn" onclick="appendCalc('4')">4</button>
+            <button class="calc-btn" onclick="appendCalc('5')">5</button>
+            <button class="calc-btn" onclick="appendCalc('6')">6</button>
+            <button class="calc-btn operator" onclick="appendCalc('+')">+</button>
+            
+            <button class="calc-btn" onclick="appendCalc('1')">1</button>
+            <button class="calc-btn" onclick="appendCalc('2')">2</button>
+            <button class="calc-btn" onclick="appendCalc('3')">3</button>
+            <button class="calc-btn" style="grid-row: span 2;" onclick="calculate()">=</button>
+            
+            <button class="calc-btn" style="grid-column: span 2;" onclick="appendCalc('0')">0</button>
+            <button class="calc-btn" onclick="appendCalc('.')">.</button>
+        </div>
+    </div>
+
     <script>
-        // --- CONFIGURATION & STATE ---
+        // --- EXISTING GAME LOGIC ---
         const totalQuestionsPerMode = 50;
         let currentMode = 'easy';
         let currentData = null;
         let allData = { easy: [], mid: [], hard: [] };
 
-        // --- GENERATOR LOGIC (The Brain) ---
-        // Generates 150 unique datasets on the fly based on difficulty rules
         function generateData() {
             const modes = ['easy', 'mid', 'hard'];
-            
             modes.forEach(mode => {
                 for(let q=1; q<=totalQuestionsPerMode; q++) {
-                    let dataset = createOneDataset(mode, q);
-                    allData[mode].push(dataset);
+                    allData[mode].push(createOneDataset(mode, q));
                 }
             });
         }
 
         function createOneDataset(mode, index) {
             let whc, startSt, temp = [], p = [], pe = [];
-            
-            // Helper for randomness
             const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
             
-            // 1. Setup Constraints
             if (mode === 'easy') {
-                whc = 150; 
-                startSt = 150; // Always start full
-                // Temps: Sine wave, never freezing
+                whc = 150; startSt = 150;
                 let baseT = rand(10, 15);
                 for(let i=0; i<12; i++) temp.push(Math.round(baseT + 10 * Math.sin((i-1)/2)));
-            } 
-            else if (mode === 'mid') {
-                whc = rand(0,1) ? 100 : 150; 
-                startSt = rand(50, whc);
-                // Temps: Occasional freeze in Jan/Dec
+            } else if (mode === 'mid') {
+                whc = rand(0,1) ? 100 : 150; startSt = rand(50, whc);
                 let baseT = rand(5, 10);
                 for(let i=0; i<12; i++) temp.push(Math.round(baseT + 15 * Math.sin((i-1.5)/2)));
-            } 
-            else { // Hard
-                whc = [80, 100, 120, 200][rand(0,3)];
-                startSt = rand(0, whc);
-                // Temps: Deep freezes or extreme heat
-                let type = rand(0, 1); // 0 = Deep Freeze, 1 = Desert
-                if(type === 0) {
-                    for(let i=0; i<12; i++) temp.push(Math.round(-5 + 20 * Math.sin((i-2)/2)));
-                } else {
-                    for(let i=0; i<12; i++) temp.push(Math.round(15 + 20 * Math.sin((i-2)/2)));
-                }
+            } else {
+                whc = [80, 100, 120, 200][rand(0,3)]; startSt = rand(0, whc);
+                let type = rand(0, 1);
+                if(type === 0) for(let i=0; i<12; i++) temp.push(Math.round(-5 + 20 * Math.sin((i-2)/2)));
+                else for(let i=0; i<12; i++) temp.push(Math.round(15 + 20 * Math.sin((i-2)/2)));
             }
 
-            // 2. Generate Precip (P) & PE
             for(let i=0; i<12; i++) {
-                // PE is roughly correlated to Temp
                 let valPE = temp[i] <= 0 ? 0 : Math.round(temp[i] * 5.5 + rand(-5, 5));
                 if(valPE < 0) valPE = 0;
                 pe.push(valPE);
-
-                // Rain randomness
-                let rain = 0;
-                if(mode === 'easy') rain = rand(20, 120);
-                else if(mode === 'mid') rain = rand(0, 150);
-                else rain = rand(0, 200); // erratic
+                let rain = mode === 'easy' ? rand(20, 120) : (mode === 'mid' ? rand(0, 150) : rand(0, 200));
                 p.push(rain);
             }
 
-            // 3. Create Descriptions
-            let desc = "";
-            if(mode === 'easy') desc = `Question ${index}: A standard temperate climate. Good for practicing basic filling/draining logic.`;
-            if(mode === 'mid') desc = `Question ${index}: Variable conditions. Watch out for potential frozen months or partial starts.`;
-            if(mode === 'hard') desc = `Question ${index}: EXTREME. May contain deep freezes, massive monsoons, or flash droughts. Be careful with the '0' floor.`;
-
+            let desc = `Question ${index}: `;
+            if(mode === 'easy') desc += "Standard climate. Practice basic filling/draining.";
+            if(mode === 'mid') desc += "Variable conditions. Watch for frozen months.";
+            if(mode === 'hard') desc += "EXTREME. Deep freezes or flash droughts.";
             return { id: index, whc, startSt, temp, p, pe, desc };
         }
 
-        // --- UI LOGIC ---
-
         function init() {
-            generateData();
-            populateSelect();
-            setMode('easy');
+            generateData(); populateSelect(); setMode('easy');
+            makeDraggable(document.getElementById("comicCalc"), document.getElementById("calcDrag"));
         }
 
         function setMode(mode) {
             currentMode = mode;
-            
-            // Update Tabs
             document.querySelectorAll('.mode-tab').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${mode}`).classList.add('active');
-
-            // Reset Select to 1
-            const select = document.getElementById('questionSelect');
-            select.value = 0; // Index 0 is Question 1
+            document.getElementById('questionSelect').value = 0;
             loadQuestion();
         }
 
@@ -377,25 +437,17 @@
             select.innerHTML = '';
             for(let i=0; i<totalQuestionsPerMode; i++) {
                 let opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = `Question ${i+1}`;
-                select.appendChild(opt);
+                opt.value = i; opt.textContent = `Question ${i+1}`; select.appendChild(opt);
             }
         }
 
         function loadQuestion() {
             const index = document.getElementById('questionSelect').value;
             currentData = allData[currentMode][index];
-
-            // Set Inputs
             document.getElementById('whc').value = currentData.whc;
             document.getElementById('startSt').value = currentData.startSt;
             document.getElementById('scenarioDesc').textContent = currentData.desc;
-
-            // Change Background
             updateBackground(currentData);
-
-            // Build Table
             buildTable();
         }
 
@@ -403,59 +455,29 @@
             const avgTemp = data.temp.reduce((a,b)=>a+b,0)/12;
             const totalRain = data.p.reduce((a,b)=>a+b,0);
             const body = document.body;
-
-            // Logic for "Magic" Background Blending
-            if (avgTemp < 5) {
-                // Icy/Frozen
-                body.style.background = "linear-gradient(135deg, #e6e9f0 0%, #eef1f5 100%)"; // Soft Ice
-                body.style.backgroundImage = "linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)";
-            } else if (totalRain > 1200) {
-                // Tropical/Lush
-                body.style.background = "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)";
-            } else if (avgTemp > 22 && totalRain < 400) {
-                // Desert/Hot
-                body.style.background = "linear-gradient(135deg, #fce38a 0%, #f38181 100%)";
-            } else {
-                // Temperate/Pleasant (Default)
-                body.style.background = "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)";
-            }
+            if (avgTemp < 5) { body.style.background = "linear-gradient(135deg, #e6e9f0 0%, #eef1f5 100%)"; }
+            else if (totalRain > 1200) { body.style.background = "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"; }
+            else if (avgTemp > 22 && totalRain < 400) { body.style.background = "linear-gradient(135deg, #fce38a 0%, #f38181 100%)"; }
+            else { body.style.background = "linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"; }
         }
 
         function buildTable() {
             const tbody = document.querySelector('#wbTable tbody');
             tbody.innerHTML = '';
             const labels = ['Temp', 'P', 'PE', 'P-PE', 'ST', 'ΔST', 'AE', 'D', 'S'];
-
             labels.forEach(label => {
                 const tr = document.createElement('tr');
-                const tdLabel = document.createElement('td');
-                tdLabel.textContent = label;
-                tr.appendChild(tdLabel);
-
+                tr.appendChild(Object.assign(document.createElement('td'), {textContent: label}));
                 for(let i=0; i<12; i++) {
                     const td = document.createElement('td');
                     const input = document.createElement('input');
-                    input.className = 'cell-input';
-                    input.dataset.row = label;
-                    input.dataset.col = i;
-                    input.type = "number";
-
-                    // Pre-fill Logic
+                    input.className = 'cell-input'; input.dataset.row = label; input.dataset.col = i; input.type = "number";
                     if(label === 'Temp') input.value = currentData.temp[i];
                     else if(label === 'P') input.value = currentData.p[i];
                     else if(label === 'PE') input.value = currentData.pe[i];
-                    else if(label === 'P-PE') {
-                        input.value = (currentData.p[i] - currentData.pe[i]);
-                        input.classList.add('readonly');
-                    }
-
-                    // Add listeners for dynamic math
-                    if(label === 'P' || label === 'PE') {
-                        input.addEventListener('input', updateDiffRow);
-                    }
-
-                    td.appendChild(input);
-                    tr.appendChild(td);
+                    else if(label === 'P-PE') { input.value = (currentData.p[i] - currentData.pe[i]); input.classList.add('readonly'); }
+                    if(label === 'P' || label === 'PE') input.addEventListener('input', updateDiffRow);
+                    td.appendChild(input); tr.appendChild(td);
                 }
                 tbody.appendChild(tr);
             });
@@ -469,30 +491,22 @@
             }
         }
 
-        // --- SOLVER ENGINE (Same robust logic as before) ---
         function solve() {
             const whc = parseFloat(document.getElementById('whc').value);
             let currentSt = parseFloat(document.getElementById('startSt').value);
             const profMode = document.getElementById('professorMode').checked;
-
             let res = { ST:[], DeltaST:[], AE:[], D:[], S:[] };
-
             for(let i=0; i<12; i++) {
                 const temp = parseFloat(document.querySelector(`input[data-row="Temp"][data-col="${i}"]`).value);
                 const p = parseFloat(document.querySelector(`input[data-row="P"][data-col="${i}"]`).value);
                 const pe = parseFloat(document.querySelector(`input[data-row="PE"][data-col="${i}"]`).value);
                 const diff = p - pe;
-
                 let newSt = currentSt, delta=0, ae=0, d=0, s=0;
-                const isFrozen = temp < 0;
-
-                if (isFrozen && !profMode) {
-                    newSt = currentSt; ae = 0; s = p; d = 0;
-                } else {
+                if (temp < 0 && !profMode) { newSt = currentSt; ae = 0; s = p; d = 0; }
+                else {
                     if (diff >= 0) {
                         let pot = currentSt + diff;
-                        if(pot > whc) { newSt = whc; s = pot - whc; }
-                        else { newSt = pot; s = 0; }
+                        if(pot > whc) { newSt = whc; s = pot - whc; } else { newSt = pot; s = 0; }
                         ae = pe; d = 0;
                     } else {
                         let need = Math.abs(diff);
@@ -502,12 +516,8 @@
                     }
                 }
                 delta = newSt - currentSt;
-                
-                res.ST.push(Math.round(newSt));
-                res.DeltaST.push(Math.round(delta));
-                res.AE.push(Math.round(ae));
-                res.D.push(Math.round(d));
-                res.S.push(Math.round(s));
+                res.ST.push(Math.round(newSt)); res.DeltaST.push(Math.round(delta));
+                res.AE.push(Math.round(ae)); res.D.push(Math.round(d)); res.S.push(Math.round(s));
                 currentSt = newSt;
             }
             return res;
@@ -515,14 +525,12 @@
 
         function checkAnswers() {
             const solution = solve();
-            const keys = ['ST', 'ΔST', 'AE', 'D', 'S'];
-            keys.forEach(key => {
+            ['ST', 'ΔST', 'AE', 'D', 'S'].forEach(key => {
                 let domKey = key === 'ΔST' ? 'ΔST' : key;
                 for(let i=0; i<12; i++) {
                     const input = document.querySelector(`input[data-row="${domKey}"][data-col="${i}"]`);
                     const val = parseFloat(input.value);
                     const correct = key === 'ΔST' ? solution.DeltaST[i] : solution[key][i];
-                    
                     if(isNaN(val)) input.className = 'cell-input';
                     else input.className = Math.abs(val - correct) < 1 ? 'cell-input correct' : 'cell-input wrong';
                 }
@@ -531,27 +539,72 @@
 
         function autoSolve() {
             const solution = solve();
-            const keys = ['ST', 'ΔST', 'AE', 'D', 'S'];
-            keys.forEach(key => {
+            ['ST', 'ΔST', 'AE', 'D', 'S'].forEach(key => {
                 let domKey = key === 'ΔST' ? 'ΔST' : key;
                 for(let i=0; i<12; i++) {
-                    const input = document.querySelector(`input[data-row="${domKey}"][data-col="${i}"]`);
-                    input.value = key === 'ΔST' ? solution.DeltaST[i] : solution[key][i];
-                    input.className = 'cell-input';
+                    document.querySelector(`input[data-row="${domKey}"][data-col="${i}"]`).value = key === 'ΔST' ? solution.DeltaST[i] : solution[key][i];
                 }
             });
         }
 
         function resetTable() {
             ['ST', 'ΔST', 'AE', 'D', 'S'].forEach(k => {
-                document.querySelectorAll(`input[data-row="${k}"]`).forEach(el => {
-                    el.value = ''; el.className = 'cell-input';
-                });
+                document.querySelectorAll(`input[data-row="${k}"]`).forEach(el => { el.value = ''; el.className = 'cell-input'; });
             });
         }
 
-        window.onload = init;
+        // --- CALCULATOR LOGIC ---
+        function toggleCalc() {
+            const calc = document.getElementById('comicCalc');
+            calc.style.display = calc.style.display === 'block' ? 'none' : 'block';
+        }
 
+        function appendCalc(val) { document.getElementById('calcDisplay').value += val; }
+        function clearCalc() { document.getElementById('calcDisplay').value = ''; }
+        function backspace() { 
+            let display = document.getElementById('calcDisplay');
+            display.value = display.value.slice(0, -1); 
+        }
+        function calculate() {
+            let display = document.getElementById('calcDisplay');
+            try { display.value = eval(display.value); } catch(e) { display.value = 'Error'; }
+        }
+
+        // Draggable Logic
+        function makeDraggable(elmnt, handle) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            handle.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                // Remove bottom/right standard positioning once dragged
+                elmnt.style.bottom = "auto";
+                elmnt.style.right = "auto";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        window.onload = init;
     </script>
 </body>
-</html>
+            </html>
